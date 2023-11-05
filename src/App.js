@@ -6,6 +6,7 @@ import theme from './utils/themes';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import AdvicePage from './pages/AdvicePage';
+import Chatbot from './pages/Chatbot';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route path="/" element={<GetDecisionByFile />} />
             <Route path="/userinput" element={<GetDecisionUserInput />} />
             <Route path="/advice-page" element={<AdvicePage/>} />
+            <Route path="/ai_bot" element={<Chatbot/>} />
             </Routes>
         </Router>
         </ThemeProvider>

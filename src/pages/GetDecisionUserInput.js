@@ -14,17 +14,20 @@ import {
     TableCell,
     TableContainer,
     TableRow,
-    Paper
+    Paper,
+    Grid,
+    CircularProgress
 } from '@mui/material';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import ApplicationStatus from '../components/ApplicationStatus';
 import axios from 'axios';
 import { useTheme } from '@mui/material/styles';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import { Link as RouterLink,useNavigate } from 'react-router-dom';
-
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 const GetDecisionUserInput = () => {
 
     const theme = useTheme();
@@ -51,18 +54,21 @@ const GetDecisionUserInput = () => {
     const [dti,setDti] = useState(true)
     const [fedti,setFedti] = useState(true)
     const [credit,setCredit]=useState(true)
-
+    
+    const [isLoading, setIsLoading] = useState(false);
     const handleChange = (event) => {
+        console.log(event.target.name)
+        console.log(event.target.value)
         setFormData({
             ...formData,
-            [event.target.name]: event.target.value,
+            [event.target.name]: Number(event.target.value),
         });
     };
     const navigate = useNavigate();
 
     // When you want to navigate with state
     const handleNavigate = () => {
-      navigate('/advice-page', { state: { credit, ltv, dti, fedti } });
+      navigate('/advice-page', { state: { credit, ltv, dti, fedti, formData } });
     };
     const handleEmailChange = (event) => {
         setEmail({
@@ -72,6 +78,9 @@ const GetDecisionUserInput = () => {
     };
 
     const handleSubmit = async (event) => {
+        event.preventDefault();
+    
+        setIsLoading(true);
         event.preventDefault();
         try {
             const res = await axios.post(
@@ -85,6 +94,8 @@ const GetDecisionUserInput = () => {
             setDti(res.data.dti_approved)
             setFedti(res.data.fedti_approved)
             setCredit(res.data.credit_score_approved)
+            console.log(formData)
+            setIsLoading(false)
         } catch (error) {
             console.error('Error submitting form:', error);
             // Handle error case here if needed
@@ -136,27 +147,36 @@ const GetDecisionUserInput = () => {
     if (isSubmitted && response) {
         return (
             <>
-                <AppBar position="fixed" style={{ background: theme.palette.red[500] }}>
-                    <Toolbar>
-                        <Link href="/" style={{ textDecoration: 'none', color: 'white' }}>
-                            <Typography variant="h6" component="div">
-                                EDA
-                            </Typography>
-                        </Link>
-                        <Link href="/userinput" style={{ marginLeft: "10px", marginTop: "07px", textDecoration: 'none', color: 'white' }}>
-                            <Typography variant="body1" component="div">
-                                <AssessmentIcon />
-                            </Typography>
-                        </Link>
-                    </Toolbar>
-                </AppBar>
+                <AppBar position="static" style={{ background: theme.palette.blue[500] }}>
+        <Toolbar>
+          <Link href="/" style={{ textDecoration: 'none', color: 'white' }}>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              EDA
+            </Typography>
+          </Link>
+          <Link href="/userinput" style={{ marginLeft: "10px", marginTop:"07px",textDecoration: 'none', color: 'white' }}>
+            <Typography variant="body2" component="div">
+              <AssessmentIcon/>
+            </Typography>
+          </Link>
+          <Link href="/ai_bot" style={{ marginLeft: "10px", marginTop:"07px",textDecoration: 'none', color: 'white' }}>
+            <Typography variant="body2" component="div">
+              <SmartToyIcon/>
+            </Typography>
+          </Link>
+        </Toolbar>
+      </AppBar>
                 <Toolbar />
-                <Container maxWidth="sm" style={{ marginTop: 64 }}>
-                    <Box display="flex"
-                        flexDirection="column" // This will stack children vertically
-                        alignItems="center" // This will align children (horizontally) in the center
-                        justifyContent="center" sx={{ mt: 1, border: 1, borderRadius: 2, padding: 4, }}>
-                        <Typography variant="h5">Application Result</Typography>
+                <Container maxWidth="lg" style={{ marginTop:"-40px", display: 'flex', justifyContent: 'center' }}>
+      <Grid container spacing={4}>
+        <Grid item xs={12} md={6}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            sx={{ mt: 1, border: 1, borderRadius: 2, padding: 4 }}
+          > <Typography variant="h5">Application Result</Typography>
                         <Typography variant="body1">
                             {response.approved
                                 ? 'Congratulations! Your application is approved.'
@@ -229,15 +249,41 @@ const GetDecisionUserInput = () => {
                         </Button>
                         {!response.approved && (
   <Typography variant="body1" style={{ marginTop: '16px' }}>
-    To learn more about how you can improve your chances of getting approved, please visit our
-    
-      <Link component="span" style={{ color: theme.palette.red[500] }} onClick={handleNavigate}>
-        advice page.
-      </Link>
-  
-  </Typography>
-)}
-                    </Box>
+  To learn more about how you can improve your chances of getting approved, please visit our
+  <Link 
+    component="span" 
+    style={{ 
+      cursor: 'pointer', 
+      color: theme.palette.red[500], 
+      marginLeft: "4px",
+      textDecoration: 'underline',
+      '&:hover': {
+        textDecoration: 'none',
+      }
+    }} 
+    onClick={handleNavigate}
+  >
+    advice page.
+  </Link>
+</Typography>
+
+)}</Box>
+</Grid>
+
+{!response.approved && (
+<Grid item xs={12} md={6}>
+
+
+          <Box display="flex" flexDirection="column">
+            
+            <Typography variant="h5" align="center">Check if you can qualify for a House Purchase.</Typography>
+            {/* Place Sliders here */}
+          </Box>
+
+          <ApplicationStatus formDataIn={formData} />
+        </Grid>
+        )}
+      </Grid>
                     <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
                         <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
                             {snackbarMessage}
@@ -252,22 +298,27 @@ const GetDecisionUserInput = () => {
 
     return (
         <>
-            <AppBar position="fixed" style={{ background: theme.palette.red[500] }}>
-                <Toolbar>
-                    <Link href="/" style={{ textDecoration: 'none', color: 'white' }}>
-                        <Typography variant="h6" component="div">
-                            EDA
-                        </Typography>
-                    </Link>
-                    <Link href="/userinput" style={{ marginLeft: "10px", marginTop: "07px", textDecoration: 'none', color: 'white' }}>
-                        <Typography variant="body1" component="div" >
-                            <AssessmentIcon />
-                        </Typography>
-                    </Link>
-                </Toolbar>
-            </AppBar>
+            <AppBar position="static" style={{ background: theme.palette.blue[500] }}>
+        <Toolbar>
+          <Link href="/" style={{ textDecoration: 'none', color: 'white' }}>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              EDA
+            </Typography>
+          </Link>
+          <Link href="/userinput" style={{ marginLeft: "10px", marginTop:"07px",textDecoration: 'none', color: 'white' }}>
+            <Typography variant="body2" component="div">
+              <AssessmentIcon/>
+            </Typography>
+          </Link>
+          <Link href="/ai_bot" style={{ marginLeft: "10px", marginTop:"07px",textDecoration: 'none', color: 'white' }}>
+            <Typography variant="body2" component="div">
+              <SmartToyIcon/>
+            </Typography>
+          </Link>
+        </Toolbar>
+      </AppBar>
             <Toolbar /> {/* This is required to offset the content below the AppBar */}
-            <div style={{ marginTop: 64, }}>
+            <div >
                 <Container maxWidth="sm" style={{ marginBottom: 32 }}>
                     <Typography variant="h6">Fill your Details for Home Purchase Approval</Typography>
                     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, border: 1, borderRadius: 2, padding: 4 }}>
@@ -286,6 +337,7 @@ const GetDecisionUserInput = () => {
                             margin="normal"
                             required
                             fullWidth
+                            type='number'
                             id="grossMonthlyIncome"
                             label="Gross Monthly Income"
                             name="GrossMonthlyIncome"
@@ -487,6 +539,24 @@ const GetDecisionUserInput = () => {
                         </Button>
                     </Box>
                 </Container>
+                {isLoading && (
+                <Box
+                    sx={{
+                        position: 'fixed', // This will make the loader overlay on top of the content
+                        top: 0,
+                        left: 0,
+                        width: '100vw',
+                        height: '100vh',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',  // semi-transparent background
+                    }}
+                >
+                    <CircularProgress size={80} color="inherit" 
+                        sx={{ color: theme.palette.white[900] }}  />
+                </Box>
+            )}
             </div>
         </>
     );

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Box, Divider,TextField, AppBar, Toolbar, Typography, Link } from '@mui/material';
+import { Button, Box, Divider,TextField,CircularProgress, AppBar, Toolbar, Typography, Link } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
 import { PieChart, Pie, Cell, Legend, Tooltip,Text } from 'recharts';
 import { DataGrid ,GridToolbar} from '@mui/x-data-grid';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 const GetDecisionByFile = () => {
   const theme = useTheme();
@@ -14,6 +15,7 @@ const GetDecisionByFile = () => {
   const [rejectionReasonsChartData, setRejectionReasonsChartData] = useState(null); // Stores the rejection reasons chart data
   const [showCharts, setShowCharts] = useState(false); // Determines whether to show the charts or the form
   const [rows, setRows] = useState([]); // Data for DataGrid
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -59,6 +61,8 @@ const GetDecisionByFile = () => {
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
+    
+        setIsLoading(true);
     if (file) {
       const formData = new FormData();
       formData.append('csv_file', file);
@@ -75,7 +79,7 @@ const GetDecisionByFile = () => {
         );
         console.log(response.data)
         const decisionData = response.data.results.slice(0, -6);
-
+        
         // Directly set the rows for the DataGrid
         setRows(decisionData.map((item) => ({
           id: item.id,
@@ -103,8 +107,9 @@ const GetDecisionByFile = () => {
           { name: 'DTI', value: dtiRejectionsCount },
           { name: 'FEDTI', value: fedtiRejectionsCount },
         ]);
-
+        setIsLoading(false)
         setShowCharts(true); // Show the charts
+
       } catch (error) {
         console.error('There was an error uploading the file:', error);
       }
@@ -117,7 +122,7 @@ const GetDecisionByFile = () => {
 
   return (
     <>
-      <AppBar position="static" style={{ background: theme.palette.red[500] }}>
+      <AppBar position="static" style={{ background: theme.palette.blue[500] }}>
         <Toolbar>
           <Link href="/" style={{ textDecoration: 'none', color: 'white' }}>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -127,6 +132,11 @@ const GetDecisionByFile = () => {
           <Link href="/userinput" style={{ marginLeft: "10px", marginTop:"07px",textDecoration: 'none', color: 'white' }}>
             <Typography variant="body2" component="div">
               <AssessmentIcon/>
+            </Typography>
+          </Link>
+          <Link href="/ai_bot" style={{ marginLeft: "10px", marginTop:"07px",textDecoration: 'none', color: 'white' }}>
+            <Typography variant="body2" component="div">
+              <SmartToyIcon/>
             </Typography>
           </Link>
         </Toolbar>
@@ -141,28 +151,38 @@ const GetDecisionByFile = () => {
       >
         {!showCharts ? (
           // Show this form only if showChart is false
-          <form onSubmit={handleFormSubmit} >
-            <Typography variant="h5">Upload the Home Buyer Info CSV</Typography>
-            <TextField
-              type="file"
-              onChange={handleFileChange}
-              accept=".csv"
-              variant="outlined"
-              margin="normal"
-              fullWidth
-              InputLabelProps={{
-                shrink: true,
-              }}
-              inputProps={{
-                style: { color: 'black' },
-              }}
-            />
-            <Box textAlign="center" marginTop={2}>
-              <Button type="submit" variant="contained" color="primary">
-                Upload and Check Approval
-              </Button>
-            </Box>
-          </form>
+          <>
+  <Box textAlign="center" maxWidth={600} margin="auto">
+    <Typography variant="h6" sx={{marginTop:"20px"}}>
+      Unlock the door to your future home with confidence. Our intuitive app simplifies the complex maze of homebuying by evaluating your financial readiness in real-time. If you're not quite there yet, don't worry – we guide you with personalized, actionable steps to bolster your buying potential. Start your journey to a 'Yes' in homeownership with us today!
+    </Typography>
+  </Box>
+  <form onSubmit={handleFormSubmit}>
+    <Typography variant="h5" textAlign="center">
+      Upload the Home Buyer Info CSV
+    </Typography>
+    <TextField
+      type="file"
+      onChange={handleFileChange}
+      accept=".csv"
+      variant="outlined"
+      margin="normal"
+      fullWidth
+      InputLabelProps={{
+        shrink: true,
+      }}
+      inputProps={{
+        style: { color: 'black' },
+      }}
+    />
+    <Box textAlign="center" marginTop={2}>
+      <Button type="submit" variant="contained" color="primary">
+        Upload and Check Approval
+      </Button>
+    </Box>
+  </form>
+</>
+
         ) : (
           // Show the PieChart if showChart is true
           <Box sx={{ display: 'flex', width: '100vw', maxHeight: '80vh' }}>
@@ -271,6 +291,24 @@ const GetDecisionByFile = () => {
 
 
         )}
+        {isLoading && (
+                <Box
+                    sx={{
+                        position: 'fixed', // This will make the loader overlay on top of the content
+                        top: 0,
+                        left: 0,
+                        width: '100vw',
+                        height: '100vh',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',  // semi-transparent background
+                    }}
+                >
+                    <CircularProgress size={80} color="inherit" 
+                        sx={{ color: theme.palette.white[900] }}  />
+                </Box>
+            )}
       </Box>
     </>
   );
