@@ -1,23 +1,25 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import GetDecisionByFile from './pages/GetDecisionByFile';
+import GetDecisionUserInput from './pages/GetDecisionUserInput';
+import theme from './utils/themes';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import AdvicePage from './pages/AdvicePage';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <CssBaseline />
+<ThemeProvider theme={theme}>
+       <Router>
+          <Routes>
+            <Route path="/" element={<GetDecisionByFile />} />
+            <Route path="/userinput" element={<GetDecisionUserInput />} />
+            <Route path="/advice-page" element={<AdvicePage/>} />
+            </Routes>
+        </Router>
+        </ThemeProvider>
     </div>
   );
 }
